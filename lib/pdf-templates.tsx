@@ -106,52 +106,52 @@ export const TEMPLATE_COLORS = {
 // Create dynamic styles based on template
 export const createTemplateStyles = (colors: typeof TEMPLATE_COLORS.classic) => StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 10,
+    padding: 25,
+    fontSize: 9,
     fontFamily: 'Helvetica',
     backgroundColor: '#FFFFFF',
   },
   header: {
-    marginBottom: 30,
+    marginBottom: 15,
     borderBottom: `2 solid ${colors.primary}`,
-    paddingBottom: 20,
+    paddingBottom: 12,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 50,
+    height: 50,
     objectFit: 'contain',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   companyName: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   companyInfo: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
   invoiceTitle: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#111',
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: 'right',
   },
   invoiceNumber: {
-    fontSize: 12,
+    fontSize: 10,
     color: colors.primary,
     fontWeight: 'bold',
     textAlign: 'right',
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   row: {
     flexDirection: 'row',
@@ -159,25 +159,25 @@ export const createTemplateStyles = (colors: typeof TEMPLATE_COLORS.classic) => 
   },
   billToBox: {
     backgroundColor: colors.background,
-    padding: 15,
+    padding: 10,
     borderRadius: 4,
     width: '48%',
   },
   billToTitle: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 8,
-  },
-  billToName: {
-    fontSize: 12,
-    fontWeight: 'bold',
     marginBottom: 4,
   },
+  billToName: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
   billToInfo: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
   datesBox: {
     width: '48%',
@@ -185,31 +185,33 @@ export const createTemplateStyles = (colors: typeof TEMPLATE_COLORS.classic) => 
   dateRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   dateLabel: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
   },
   dateValue: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
   },
   table: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 12,
+    marginBottom: 12,
   },
   tableHeader: {
     flexDirection: 'row',
     backgroundColor: colors.primary,
     color: '#fff',
-    padding: 10,
+    padding: 6,
     fontWeight: 'bold',
+    fontSize: 8,
   },
   tableRow: {
     flexDirection: 'row',
     borderBottom: '1 solid #E5E7EB',
-    padding: 10,
+    padding: 6,
+    fontSize: 8,
   },
   tableRowAlt: {
     backgroundColor: '#F9FAFB',
@@ -236,13 +238,13 @@ export const createTemplateStyles = (colors: typeof TEMPLATE_COLORS.classic) => 
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 3,
   },
   totalLabel: {
-    fontSize: 10,
+    fontSize: 8,
   },
   totalValue: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
   },
   grandTotal: {
@@ -250,51 +252,51 @@ export const createTemplateStyles = (colors: typeof TEMPLATE_COLORS.classic) => 
     justifyContent: 'space-between',
     backgroundColor: colors.primary,
     color: '#fff',
-    padding: 12,
-    marginTop: 8,
+    padding: 8,
+    marginTop: 4,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 11,
   },
   bankDetailsSection: {
-    marginTop: 20,
-    padding: 12,
+    marginTop: 10,
+    padding: 8,
     backgroundColor: colors.background,
     borderRadius: 4,
     borderLeft: `4 solid ${colors.primary}`,
   },
   bankDetailsTitle: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 6,
+    marginBottom: 3,
   },
   bankDetailsText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
   notesSection: {
-    marginTop: 30,
-    paddingTop: 20,
+    marginTop: 12,
+    paddingTop: 10,
     borderTop: '1 solid #E5E7EB',
   },
   notesTitle: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 6,
+    marginBottom: 3,
   },
   notesText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
-    lineHeight: 1.4,
+    lineHeight: 1.3,
   },
   footer: {
-    marginTop: 40,
-    paddingTop: 20,
+    marginTop: 15,
+    paddingTop: 10,
     borderTop: `2 solid ${colors.primary}`,
     textAlign: 'center',
-    fontSize: 9,
+    fontSize: 8,
     color: '#666',
   },
   paidStamp: {
@@ -349,6 +351,7 @@ interface InvoiceData {
   companyPhone?: string;
   companyAddress?: string;
   companyLogo?: string | null;
+  logoSize: number; // Logo size in pixels (default: 50)
   bankName?: string | null;
   accountNumber?: string | null;
   accountName?: string | null;
@@ -452,10 +455,20 @@ const getTemplateColors = (template?: string) => {
 export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
   const colors = getTemplateColors(invoice.template);
   const styles = createTemplateStyles(colors);
+  
+  // Use provided logo size or default to 50
+  const logoSize = invoice.logoSize || 50;
+  const logoStyle = {
+    width: logoSize,
+    height: logoSize,
+    objectFit: 'contain' as const,
+    marginBottom: 5,
+  };
 
   console.log('DEBUG TemplatedInvoicePDF:', {
     templateProp: invoice.template,
     resolvedColors: colors,
+    logoSize: logoSize,
   });
 
   return (
@@ -473,7 +486,7 @@ export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
               {invoice.companyLogo && (
                 <Image
                   src={invoice.companyLogo}
-                  style={styles.logo}
+                  style={logoStyle}
                 />
               )}
               <Text style={styles.companyName}>{invoice.companyName}</Text>
@@ -572,7 +585,7 @@ export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
           </View>
           {invoice.taxAmount > 0 && (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Tax:</Text>
+              <Text style={styles.totalLabel}>VAT:</Text>
               <Text style={styles.totalValue}>
                 {formatCurrency(invoice.taxAmount, invoice.currency)}
               </Text>

@@ -16,6 +16,7 @@ model Tenant {
   companyName     String
   slug            String   @unique
   logo            String?
+  logoSize        Int      @default(50)
   address         String?
   city            String?
   state           String?

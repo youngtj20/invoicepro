@@ -95,6 +95,7 @@ export async function GET(
       companyPhone: tenant.phone || undefined,
       companyAddress: tenant.address || undefined,
       companyLogo: logoBase64,
+      logoSize: tenant.logoSize || 50,
       bankName: tenant.bankName || undefined,
       accountNumber: tenant.accountNumber || undefined,
       accountName: tenant.accountName || undefined,

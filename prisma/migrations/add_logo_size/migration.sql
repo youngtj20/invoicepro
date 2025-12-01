@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Tenant` ADD COLUMN `logoSize` INTEGER NOT NULL DEFAULT 50;

@@ -24,6 +24,7 @@ interface TenantSettings {
   numberFormat: string;
   language: string;
   logo: string | null;
+  logoSize: number;
   bankName: string;
   accountNumber: string;
   accountName: string;
@@ -46,6 +47,7 @@ export default function SettingsPage() {
     numberFormat: '1,234.56',
     language: 'en',
     logo: null,
+    logoSize: 50,
     bankName: '',
     accountNumber: '',
     accountName: '',
@@ -87,6 +89,8 @@ export default function SettingsPage() {
     try {
       setIsSaving(true);
 
+      console.log('Saving settings:', settings);
+
       const response = await fetch('/api/settings', {
         method: 'PUT',
         headers: {
@@ -95,8 +99,10 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       });
 
+      const data = await response.json();
+      console.log('Response:', data);
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || 'Failed to save settings');
       }
 
@@ -104,13 +110,14 @@ export default function SettingsPage() {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
+      console.error('Error:', err);
       setError(err.message || 'Failed to save settings');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleChange = (field: keyof TenantSettings, value: string) => {
+  const handleChange = (field: keyof TenantSettings, value: string | number) => {
     setSettings((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -407,6 +414,47 @@ export default function SettingsPage() {
               onChange={handleLogoUpload}
               className="hidden"
             />
+
+            {/* Logo Size Control */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Logo Size on PDF (pixels)
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="30"
+                  max="150"
+                  step="5"
+                  value={settings.logoSize || 50}
+                  onChange={(e) => handleChange('logoSize', parseInt(e.target.value, 10))}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700 min-w-[60px]">
+                    {settings.logoSize || 50}px
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Adjust the logo size for better visibility on invoices. Recommended: 50-80px
+              </p>
+              {settings.logo && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-xs text-gray-600 mb-2">Preview:</p>
+                  <img
+                    src={settings.logo}
+                    alt="Logo Preview"
+                    style={{
+                      width: `${settings.logoSize || 50}px`,
+                      height: `${settings.logoSize || 50}px`,
+                      objectFit: 'contain',
+                    }}
+                    className="border border-gray-300 rounded p-1 bg-white"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
