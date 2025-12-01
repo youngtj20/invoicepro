@@ -31,6 +31,7 @@ export async function GET(
             item: true,
           },
         },
+        template: true,
       },
     });
 
@@ -176,6 +177,7 @@ export async function PATCH(
               item: true,
             },
           },
+          template: true,
         },
       });
     });

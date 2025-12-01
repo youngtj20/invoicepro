@@ -9,8 +9,10 @@ import { EmailService } from '@/lib/email';
 import { SMSService } from '@/lib/sms';
 import { WhatsAppService } from '@/lib/whatsapp';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { InvoicePDF } from '@/lib/pdf-generator';
+import { TemplatedInvoicePDF } from '@/lib/pdf-templates';
 import React from 'react';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 // Validation schema
 const sendInvoiceSchema = z.object({
@@ -39,7 +41,7 @@ export async function POST(
     const body = await request.json();
     const validatedData = sendInvoiceSchema.parse(body);
 
-    // Fetch invoice with all related data
+    // Fetch invoice with all related data including template
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
@@ -52,6 +54,7 @@ export async function POST(
             item: true,
           },
         },
+        template: true,
       },
     });
 
@@ -83,6 +86,36 @@ export async function POST(
     let sentMethod = '';
     let sentTo = '';
 
+    // Convert logo to base64 if exists
+    let logoBase64: string | undefined;
+    if (tenant.logo) {
+      try {
+        const logoPath = join(process.cwd(), 'public', tenant.logo);
+        const logoBuffer = readFileSync(logoPath);
+        const ext = tenant.logo.split('.').pop()?.toLowerCase();
+        const mimeType = ext === 'png' ? 'image/png' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
+        logoBase64 = `data:${mimeType};base64,${logoBuffer.toString('base64')}`;
+      } catch (error) {
+        console.error('Error reading logo file:', error);
+        // Continue without logo if file read fails
+      }
+    }
+
+    // Determine template slug - use invoice template or fall back to tenant default
+    let templateSlug = 'classic';
+    if (invoice.template?.slug) {
+      templateSlug = invoice.template.slug;
+    } else if (tenant.defaultTemplateId) {
+      // If invoice doesn't have a template, fetch the tenant's default template
+      const defaultTemplate = await prisma.template.findUnique({
+        where: { id: tenant.defaultTemplateId },
+        select: { slug: true },
+      });
+      if (defaultTemplate?.slug) {
+        templateSlug = defaultTemplate.slug;
+      }
+    }
+
     // Handle different sending methods
     if (validatedData.method === 'email') {
       // Validate email
@@ -100,10 +133,15 @@ export async function POST(
       invoiceDate: invoice.issueDate.toISOString(),
       dueDate: invoice.dueDate?.toISOString() || '',
       status: invoice.status,
+      paymentStatus: invoice.paymentStatus,
       companyName: tenant.companyName,
       companyEmail: tenant.email || undefined,
       companyPhone: tenant.phone || undefined,
       companyAddress: tenant.address || undefined,
+      companyLogo: logoBase64,
+      bankName: tenant.bankName || undefined,
+      accountNumber: tenant.accountNumber || undefined,
+      accountName: tenant.accountName || undefined,
       customer: {
         name: invoice.customer.name,
         email: invoice.customer.email,
@@ -126,10 +164,11 @@ export async function POST(
       notes: invoice.notes,
       terms: invoice.terms,
         currency: tenant.currency,
+        template: templateSlug,
       };
 
-      // Generate PDF
-      const pdfBuffer = await renderToBuffer(React.createElement(InvoicePDF, { invoice: pdfData }) as any);
+      // Generate PDF with template support
+      const pdfBuffer = await renderToBuffer(React.createElement(TemplatedInvoicePDF, { invoice: pdfData }) as any);
 
       // Generate email HTML
       const emailHtml = EmailService.generateInvoiceEmail({
@@ -234,10 +273,15 @@ export async function POST(
       invoiceDate: invoice.issueDate.toISOString(),
       dueDate: invoice.dueDate?.toISOString() || '',
       status: invoice.status,
+      paymentStatus: invoice.paymentStatus,
       companyName: tenant.companyName,
       companyEmail: tenant.email || undefined,
       companyPhone: tenant.phone || undefined,
       companyAddress: tenant.address || undefined,
+      companyLogo: logoBase64,
+      bankName: tenant.bankName || undefined,
+      accountNumber: tenant.accountNumber || undefined,
+      accountName: tenant.accountName || undefined,
       customer: {
         name: invoice.customer.name,
         email: invoice.customer.email,
@@ -260,10 +304,11 @@ export async function POST(
       notes: invoice.notes,
       terms: invoice.terms,
         currency: tenant.currency,
+        template: templateSlug,
       };
 
-      // Generate PDF
-      const pdfBuffer = await renderToBuffer(React.createElement(InvoicePDF, { invoice: pdfData }) as any);
+      // Generate PDF with template support
+      const pdfBuffer = await renderToBuffer(React.createElement(TemplatedInvoicePDF, { invoice: pdfData }) as any);
 
       // Generate WhatsApp message
       const whatsappMessage = validatedData.message || WhatsAppService.generateInvoiceMessage({

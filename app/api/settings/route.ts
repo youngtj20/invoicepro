@@ -56,6 +56,7 @@ export async function GET() {
       bankName: tenant.bankName || '',
       accountNumber: tenant.accountNumber || '',
       accountName: tenant.accountName || '',
+      defaultTemplateId: tenant.defaultTemplateId || null,
     });
   } catch (error: any) {
     console.error('Error fetching settings:', error);

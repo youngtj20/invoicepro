@@ -10,6 +10,67 @@ import {
 
 // Template color schemes
 export const TEMPLATE_COLORS = {
+  'modern-blue': {
+    primary: '#2563EB',
+    secondary: '#1E40AF',
+    accent: '#3B82F6',
+    background: '#EFF6FF',
+  },
+  'classic-green': {
+    primary: '#15803D',
+    secondary: '#166534',
+    accent: '#22C55E',
+    background: '#DCFCE7',
+  },
+  'elegant-purple': {
+    primary: '#9333EA',
+    secondary: '#7E22CE',
+    accent: '#A855F7',
+    background: '#F3E8FF',
+  },
+  'bold-red': {
+    primary: '#DC2626',
+    secondary: '#B91C1C',
+    accent: '#EF4444',
+    background: '#FEE2E2',
+  },
+  'minimalist-gray': {
+    primary: '#4B5563',
+    secondary: '#374151',
+    accent: '#6B7280',
+    background: '#F3F4F6',
+  },
+  'corporate-navy': {
+    primary: '#1E3A8A',
+    secondary: '#1E40AF',
+    accent: '#3B82F6',
+    background: '#EFF6FF',
+  },
+  'fresh-orange': {
+    primary: '#EA580C',
+    secondary: '#C2410C',
+    accent: '#FB923C',
+    background: '#FFEDD5',
+  },
+  'professional-black': {
+    primary: '#111827',
+    secondary: '#1F2937',
+    accent: '#374151',
+    background: '#F9FAFB',
+  },
+  'friendly-yellow': {
+    primary: '#CA8A04',
+    secondary: '#A16207',
+    accent: '#FBBF24',
+    background: '#FEFCE8',
+  },
+  'tech-teal': {
+    primary: '#0891B2',
+    secondary: '#0E7490',
+    accent: '#06B6D4',
+    background: '#CCFBF1',
+  },
+  // Fallback colors
   classic: {
     primary: '#2563EB',
     secondary: '#1E40AF',
@@ -363,25 +424,39 @@ const getStampText = (paymentStatus?: string) => {
 
 // Get template colors by slug
 const getTemplateColors = (template?: string) => {
-  switch (template) {
-    case 'modern':
-      return TEMPLATE_COLORS.modern;
-    case 'elegant':
-      return TEMPLATE_COLORS.elegant;
-    case 'professional':
-      return TEMPLATE_COLORS.professional;
-    case 'minimal':
-      return TEMPLATE_COLORS.minimal;
-    case 'classic':
-    default:
-      return TEMPLATE_COLORS.classic;
+  if (!template) return TEMPLATE_COLORS.classic;
+  
+  const slug = template.toLowerCase();
+  
+  // Direct lookup for full slugs from database
+  if (TEMPLATE_COLORS[slug as keyof typeof TEMPLATE_COLORS]) {
+    return TEMPLATE_COLORS[slug as keyof typeof TEMPLATE_COLORS];
   }
+  
+  // Fallback for partial matches
+  if (slug.includes('modern')) return TEMPLATE_COLORS['modern-blue'];
+  if (slug.includes('classic')) return TEMPLATE_COLORS['classic-green'];
+  if (slug.includes('elegant')) return TEMPLATE_COLORS['elegant-purple'];
+  if (slug.includes('bold')) return TEMPLATE_COLORS['bold-red'];
+  if (slug.includes('minimal')) return TEMPLATE_COLORS['minimalist-gray'];
+  if (slug.includes('corporate')) return TEMPLATE_COLORS['corporate-navy'];
+  if (slug.includes('fresh')) return TEMPLATE_COLORS['fresh-orange'];
+  if (slug.includes('professional')) return TEMPLATE_COLORS['professional-black'];
+  if (slug.includes('friendly')) return TEMPLATE_COLORS['friendly-yellow'];
+  if (slug.includes('tech')) return TEMPLATE_COLORS['tech-teal'];
+  
+  return TEMPLATE_COLORS.classic;
 };
 
 // Main Invoice PDF Component with Template Support
 export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
   const colors = getTemplateColors(invoice.template);
   const styles = createTemplateStyles(colors);
+
+  console.log('DEBUG TemplatedInvoicePDF:', {
+    templateProp: invoice.template,
+    resolvedColors: colors,
+  });
 
   return (
     <Document>

@@ -70,6 +70,21 @@ export async function POST(
       }
     }
 
+    // Determine template slug - use invoice template or fall back to tenant default
+    let templateSlug = 'classic';
+    if (invoice.template?.slug) {
+      templateSlug = invoice.template.slug;
+    } else if (tenant.defaultTemplateId) {
+      // If invoice doesn't have a template, fetch the tenant's default template
+      const defaultTemplate = await prisma.template.findUnique({
+        where: { id: tenant.defaultTemplateId },
+        select: { slug: true },
+      });
+      if (defaultTemplate?.slug) {
+        templateSlug = defaultTemplate.slug;
+      }
+    }
+
     // Prepare invoice data for PDF
     const pdfData = {
       invoiceNumber: invoice.invoiceNumber,
@@ -98,7 +113,7 @@ export async function POST(
       items: invoice.items.map((item: any) => ({
         description: item.item?.name || item.description || 'Item',
         quantity: item.quantity || 0,
-        unitPrice: item.unitPrice || 0,
+        unitPrice: item.price || 0,
         total: item.amount || 0,
       })),
       subtotal: invoice.subtotal,
@@ -107,7 +122,7 @@ export async function POST(
       notes: invoice.notes,
       terms: invoice.terms,
       currency: tenant.currency,
-      template: invoice.template?.slug || 'classic',
+      template: templateSlug,
     };
 
     // Generate PDF

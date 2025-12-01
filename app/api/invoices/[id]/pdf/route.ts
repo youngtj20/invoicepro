@@ -60,6 +60,29 @@ export async function GET(
       }
     }
 
+    // Determine template slug - use invoice template or fall back to tenant default
+    let templateSlug = 'classic';
+    if (invoice.template?.slug) {
+      templateSlug = invoice.template.slug;
+    } else if (tenant.defaultTemplateId) {
+      // If invoice doesn't have a template, fetch the tenant's default template
+      const defaultTemplate = await prisma.template.findUnique({
+        where: { id: tenant.defaultTemplateId },
+        select: { slug: true },
+      });
+      if (defaultTemplate?.slug) {
+        templateSlug = defaultTemplate.slug;
+      }
+    }
+
+    console.log('DEBUG PDF Generation:', {
+      invoiceId,
+      invoiceTemplateId: invoice.templateId,
+      invoiceTemplateSlug: invoice.template?.slug,
+      tenantDefaultTemplateId: tenant.defaultTemplateId,
+      resolvedTemplateSlug: templateSlug,
+    });
+
     // Prepare invoice data for PDF
     const pdfData = {
       invoiceNumber: invoice.invoiceNumber,
@@ -97,7 +120,7 @@ export async function GET(
       notes: invoice.notes,
       terms: invoice.terms,
       currency: tenant.currency,
-      template: invoice.template?.slug || 'classic',
+      template: templateSlug,
     };
 
     // Generate PDF with template support

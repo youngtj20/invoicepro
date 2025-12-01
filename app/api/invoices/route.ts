@@ -146,6 +146,25 @@ export async function POST(request: NextRequest) {
     console.log('Received invoice data:', JSON.stringify(body, null, 2));
     const validatedData = invoiceSchema.parse(body);
 
+    // Determine templateId: if not provided, fall back to tenant defaultTemplateId
+    let resolvedTemplateId: string | undefined = validatedData.templateId;
+    if (!resolvedTemplateId) {
+      // Ensure we have latest tenant defaultTemplateId
+      const tenantWithDefault = await prisma.tenant.findUnique({
+        where: { id: tenant.id },
+        select: { defaultTemplateId: true },
+      });
+      if (tenantWithDefault?.defaultTemplateId) {
+        resolvedTemplateId = tenantWithDefault.defaultTemplateId;
+      }
+    }
+
+    console.log('DEBUG Invoice Creation:', {
+      requestTemplateId: validatedData.templateId,
+      tenantDefaultTemplateId: tenant.defaultTemplateId,
+      resolvedTemplateId,
+    });
+
     // Verify customer belongs to tenant
     const customer = await prisma.customer.findFirst({
       where: {
@@ -186,7 +205,7 @@ export async function POST(request: NextRequest) {
           issueDate: new Date(validatedData.invoiceDate),
           dueDate: new Date(validatedData.dueDate),
           status: validatedData.status,
-          templateId: validatedData.templateId,
+          templateId: resolvedTemplateId,
           notes: validatedData.notes,
           terms: validatedData.terms,
           subtotal: validatedData.subtotal,
@@ -216,6 +235,7 @@ export async function POST(request: NextRequest) {
               item: true,
             },
           },
+          template: true,
         },
       });
     });

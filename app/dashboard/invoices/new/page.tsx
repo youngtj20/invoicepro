@@ -56,7 +56,20 @@ export default function NewInvoicePage() {
   useEffect(() => {
     generateInvoiceNumber();
     setDefaultDates();
+    loadDefaultTemplate();
   }, []);
+
+  const loadDefaultTemplate = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      const data = await response.json();
+      if (data.defaultTemplateId) {
+        setTemplateId(data.defaultTemplateId);
+      }
+    } catch (err) {
+      console.error('Failed to load default template:', err);
+    }
+  };
 
   useEffect(() => {
     if (customerId) {
