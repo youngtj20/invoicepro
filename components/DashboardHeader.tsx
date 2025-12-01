@@ -1,27 +1,37 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, ChevronDown, User } from 'lucide-react';
+import { Bell, ChevronDown, User, Menu } from 'lucide-react';
 import { Tenant, User as PrismaUser } from '@prisma/client';
 import { signOut } from 'next-auth/react';
 
 interface DashboardHeaderProps {
   user: PrismaUser;
   tenant: Tenant;
+  onMenuClick?: () => void;
 }
 
-export default function DashboardHeader({ user, tenant }: DashboardHeaderProps) {
+export default function DashboardHeader({ user, tenant, onMenuClick }: DashboardHeaderProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-      {/* Left side - could add breadcrumbs or page title here */}
-      <div className="flex-1">
-        {/* Placeholder for future breadcrumbs */}
+    <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-3 sm:px-4 md:px-6 lg:px-8 sticky top-0 z-20">
+      {/* Left side - menu button on mobile */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Toggle menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="hidden md:block">
+          {/* Placeholder for future breadcrumbs */}
+        </div>
       </div>
 
       {/* Right side - notifications and user menu */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Notifications */}
         <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors relative">
           <Bell className="w-5 h-5" />
