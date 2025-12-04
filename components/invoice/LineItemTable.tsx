@@ -122,7 +122,7 @@ export default function LineItemTable({
 
   const isItemValid = (item: LineItem): boolean => {
     return (
-      item.description && 
+      !!item.description && 
       item.description.trim() !== '' && 
       item.quantity > 0 && 
       item.unitPrice >= 0
