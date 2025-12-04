@@ -81,78 +81,121 @@ export default function TemplateGallery({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates.map((template) => {
-          const isLocked = template.isPremium && !canUsePremium;
-          const isSelected = template.id === selectedTemplateId;
-
-          return (
-            <button
-              key={template.id}
-              onClick={() => !isLocked && onSelect(template.id)}
-              disabled={isLocked}
-              className={`relative p-4 border-2 rounded-lg text-left transition ${
-                isSelected
-                  ? 'border-primary-500 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
-              } ${isLocked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              {/* Selected Indicator */}
-              {isSelected && (
-                <div className="absolute top-2 right-2 w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
-                </div>
-              )}
-
-              {/* Premium Badge */}
-              {template.isPremium && (
-                <div className="absolute top-2 left-2">
-                  <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">
-                    PRO
-                  </span>
-                </div>
-              )}
-
-              {/* Template Preview */}
-              <div className="aspect-[3/4] bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden">
-                {template.previewImage ? (
-                  <img
-                    src={template.previewImage}
-                    alt={template.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <FileText className="w-12 h-12 text-gray-400" />
-                )}
-              </div>
-
-              {/* Template Info */}
-              <h4 className="font-medium text-gray-900 mb-1">{template.name}</h4>
-              {template.description && (
-                <p className="text-sm text-gray-600 line-clamp-2">
-                  {template.description}
-                </p>
-              )}
-
-              {/* Locked Overlay */}
-              {isLocked && (
-                <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center rounded-lg">
-                  <div className="text-center">
-                    <div className="inline-block p-3 bg-gray-800 text-white rounded-lg text-sm font-medium">
-                      Upgrade to Pro
-                    </div>
-                  </div>
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {templates.length === 0 && (
-        <div className="text-center py-12">
+      {templates.length === 0 ? (
+        <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <p className="text-gray-600">No templates available</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Template
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Description
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {templates.map((template, index) => {
+                const isLocked = template.isPremium && !canUsePremium;
+                const isSelected = template.id === selectedTemplateId;
+
+                return (
+                  <tr
+                    key={template.id}
+                    className={`transition ${
+                      isSelected
+                        ? 'bg-primary-50 hover:bg-primary-100'
+                        : 'hover:bg-gray-50'
+                    } ${isLocked ? 'opacity-60' : ''}`}
+                  >
+                    {/* Template Name & Preview */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-200">
+                          {template.previewImage ? (
+                            <img
+                              src={template.previewImage}
+                              alt={template.name}
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                          ) : (
+                            <FileText className="w-6 h-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{template.name}</p>
+                          {isSelected && (
+                            <p className="text-xs text-primary-600 font-semibold">
+                              ✓ Selected
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Description */}
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {template.description || 'No description'}
+                      </p>
+                    </td>
+
+                    {/* Type Badge */}
+                    <td className="px-6 py-4 text-center">
+                      {template.isPremium ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                          <span className="w-2 h-2 bg-yellow-600 rounded-full mr-2"></span>
+                          PRO
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                          <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                          Free
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Action Button */}
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => !isLocked && onSelect(template.id)}
+                        disabled={isLocked}
+                        className={`inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition ${
+                          isSelected
+                            ? 'bg-primary-600 text-white hover:bg-primary-700'
+                            : isLocked
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {isLocked ? (
+                          <span>Locked</span>
+                        ) : isSelected ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Selected
+                          </>
+                        ) : (
+                          'Select'
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

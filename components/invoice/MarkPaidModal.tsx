@@ -28,10 +28,12 @@ export default function MarkPaidModal({
   const [paidAt, setPaidAt] = useState(new Date().toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(false);
 
     if (!paymentMethod.trim()) {
       setError('Payment method is required');
@@ -40,6 +42,8 @@ export default function MarkPaidModal({
 
     try {
       setIsLoading(true);
+
+      console.log('Marking invoice as paid:', { invoiceId, paymentMethod });
 
       const response = await fetch(`/api/invoices/${invoiceId}/mark-paid`, {
         method: 'POST',
@@ -56,9 +60,13 @@ export default function MarkPaidModal({
 
       const data = await response.json();
 
+      console.log('Mark paid response:', { status: response.status, data });
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to mark invoice as paid');
       }
+
+      setSuccess(true);
 
       // Reset form
       setPaymentMethod('');
@@ -66,9 +74,13 @@ export default function MarkPaidModal({
       setNotes('');
       setPaidAt(new Date().toISOString().split('T')[0]);
 
-      onSuccess();
-      onClose();
+      // Wait a moment to show success message
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1500);
     } catch (err: any) {
+      console.error('Error marking invoice as paid:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);

@@ -42,6 +42,12 @@ interface Tenant {
   email: string | null;
 }
 
+interface Template {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface Receipt {
   id: string;
   receiptNumber: string;
@@ -54,9 +60,30 @@ interface Receipt {
   notes: string | null;
   customer: Customer;
   tenant: Tenant;
+  template: Template | null;
   invoiceId: string | null;
   createdAt: string;
 }
+
+// Template color schemes
+const TEMPLATE_COLORS: Record<string, { primary: string; bg: string; text: string }> = {
+  'modern-blue': { primary: '#2563EB', bg: 'bg-blue-50', text: 'text-blue-700' },
+  'classic-green': { primary: '#15803D', bg: 'bg-green-50', text: 'text-green-700' },
+  'elegant-purple': { primary: '#9333EA', bg: 'bg-purple-50', text: 'text-purple-700' },
+  'bold-red': { primary: '#DC2626', bg: 'bg-red-50', text: 'text-red-700' },
+  'minimalist-gray': { primary: '#4B5563', bg: 'bg-gray-50', text: 'text-gray-700' },
+  'corporate-navy': { primary: '#1E3A8A', bg: 'bg-blue-50', text: 'text-blue-700' },
+  'fresh-orange': { primary: '#EA580C', bg: 'bg-orange-50', text: 'text-orange-700' },
+  'professional-black': { primary: '#111827', bg: 'bg-gray-50', text: 'text-gray-700' },
+  'friendly-yellow': { primary: '#CA8A04', bg: 'bg-yellow-50', text: 'text-yellow-700' },
+  'tech-teal': { primary: '#0891B2', bg: 'bg-cyan-50', text: 'text-cyan-700' },
+};
+
+const getTemplateColors = (template: Template | null) => {
+  if (!template) return TEMPLATE_COLORS['modern-blue'];
+  const slug = template.slug.toLowerCase();
+  return TEMPLATE_COLORS[slug] || TEMPLATE_COLORS['modern-blue'];
+};
 
 export default function ReceiptDetailPage() {
   const params = useParams();

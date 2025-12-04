@@ -656,3 +656,170 @@ export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
 };
 
 export default TemplatedInvoicePDF;
+
+// Receipt Data Interface
+interface ReceiptData {
+  receiptNumber: string;
+  issueDate: string;
+  companyName: string;
+  companyEmail?: string;
+  companyPhone?: string;
+  companyAddress?: string;
+  companyLogo?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  accountName?: string | null;
+  customer: {
+    name: string;
+    email?: string | null;
+    company?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    country?: string | null;
+    postalCode?: string | null;
+  };
+  amount: number;
+  paymentMethod?: string;
+  reference?: string | null;
+  notes?: string | null;
+  currency?: string;
+  template?: string; // Template slug
+}
+
+// Templated Receipt PDF Component
+export const TemplatedReceiptPDF = ({ receipt }: { receipt: ReceiptData }) => {
+  const colors = getTemplateColors(receipt.template);
+  const styles = createTemplateStyles(colors);
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Paid Stamp */}
+        <View style={styles.paidStamp}>
+          <Text>PAID</Text>
+        </View>
+
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <View>
+              {receipt.companyLogo && (
+                <Image
+                  src={receipt.companyLogo}
+                  style={{ width: 50, height: 50, objectFit: 'contain' as const, marginBottom: 5 }}
+                />
+              )}
+              <Text style={styles.companyName}>{receipt.companyName}</Text>
+              <View style={styles.companyInfo}>
+                {receipt.companyEmail && <Text>{receipt.companyEmail}</Text>}
+                {receipt.companyPhone && <Text>{receipt.companyPhone}</Text>}
+                {receipt.companyAddress && <Text>{receipt.companyAddress}</Text>}
+              </View>
+            </View>
+            <View>
+              <Text style={styles.invoiceTitle}>RECEIPT</Text>
+              <Text style={styles.invoiceNumber}>{receipt.receiptNumber}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Customer & Date Info */}
+        <View style={[styles.section, styles.row]}>
+          <View style={styles.billToBox}>
+            <Text style={styles.billToTitle}>RECEIVED FROM:</Text>
+            <Text style={styles.billToName}>{receipt.customer.name}</Text>
+            {receipt.customer.company && (
+              <Text style={styles.billToInfo}>{receipt.customer.company}</Text>
+            )}
+            {receipt.customer.email && (
+              <Text style={styles.billToInfo}>{receipt.customer.email}</Text>
+            )}
+            {receipt.customer.address && (
+              <View style={styles.billToInfo}>
+                <Text>{receipt.customer.address}</Text>
+                <Text>
+                  {[
+                    receipt.customer.city,
+                    receipt.customer.state,
+                    receipt.customer.postalCode,
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
+                </Text>
+                {receipt.customer.country && <Text>{receipt.customer.country}</Text>}
+              </View>
+            )}
+          </View>
+
+          <View style={styles.datesBox}>
+            <View style={styles.dateRow}>
+              <Text style={styles.dateLabel}>Receipt Date:</Text>
+              <Text style={styles.dateValue}>{formatDate(receipt.issueDate)}</Text>
+            </View>
+            {receipt.paymentMethod && (
+              <View style={styles.dateRow}>
+                <Text style={styles.dateLabel}>Payment Method:</Text>
+                <Text style={styles.dateValue}>{receipt.paymentMethod}</Text>
+              </View>
+            )}
+            {receipt.reference && (
+              <View style={styles.dateRow}>
+                <Text style={styles.dateLabel}>Reference:</Text>
+                <Text style={styles.dateValue}>{receipt.reference}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Amount Section */}
+        <View style={styles.table}>
+          <View style={styles.tableHeader}>
+            <Text style={styles.colDescription}>Description</Text>
+            <Text style={styles.colTotal}>Amount</Text>
+          </View>
+
+          <View style={styles.tableRow}>
+            <Text style={styles.colDescription}>Payment Received</Text>
+            <Text style={styles.colTotal}>
+              {formatCurrency(receipt.amount, receipt.currency)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Total */}
+        <View style={styles.totalsBox}>
+          <View style={styles.grandTotal}>
+            <Text>TOTAL PAID:</Text>
+            <Text>{formatCurrency(receipt.amount, receipt.currency)}</Text>
+          </View>
+        </View>
+
+        {/* Bank Details */}
+        {(receipt.bankName || receipt.accountNumber || receipt.accountName) && (
+          <View style={styles.bankDetailsSection}>
+            <Text style={styles.bankDetailsTitle}>PAYMENT DETAILS:</Text>
+            <View style={styles.bankDetailsText}>
+              {receipt.bankName && <Text>Bank: {receipt.bankName}</Text>}
+              {receipt.accountNumber && <Text>Account Number: {receipt.accountNumber}</Text>}
+              {receipt.accountName && <Text>Account Name: {receipt.accountName}</Text>}
+            </View>
+          </View>
+        )}
+
+        {/* Notes */}
+        {receipt.notes && (
+          <View style={styles.notesSection}>
+            <Text style={styles.notesTitle}>NOTES:</Text>
+            <Text style={styles.notesText}>{receipt.notes}</Text>
+          </View>
+        )}
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text>Thank you for your payment!</Text>
+        </View>
+      </Page>
+    </Document>
+  );
+};

@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { requireTenant } from '@/middleware/tenant';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { ReceiptPDF } from '@/lib/pdf-generator';
+import { TemplatedReceiptPDF } from '@/lib/pdf-templates';
 import React from 'react';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -24,7 +24,7 @@ export async function GET(
     const tenant = await requireTenant();
     const { id: receiptId } = await params;
 
-    // Fetch receipt with all related data
+    // Fetch receipt with all related data including template
     const receipt = await prisma.receipt.findFirst({
       where: {
         id: receiptId,
@@ -32,6 +32,7 @@ export async function GET(
       },
       include: {
         customer: true,
+        template: true,
       },
     });
 
@@ -51,6 +52,21 @@ export async function GET(
       } catch (error) {
         console.error('Error reading logo file:', error);
         // Continue without logo if file read fails
+      }
+    }
+
+    // Determine template slug - use receipt template or fall back to tenant default
+    let templateSlug = 'classic';
+    if (receipt.template?.slug) {
+      templateSlug = receipt.template.slug;
+    } else if (tenant.defaultTemplateId) {
+      // If receipt doesn't have a template, fetch the tenant's default template
+      const defaultTemplate = await prisma.template.findUnique({
+        where: { id: tenant.defaultTemplateId },
+        select: { slug: true },
+      });
+      if (defaultTemplate?.slug) {
+        templateSlug = defaultTemplate.slug;
       }
     }
 
@@ -81,10 +97,11 @@ export async function GET(
       reference: receipt.reference || undefined,
       notes: receipt.notes || undefined,
       currency: receipt.currency,
+      template: templateSlug,
     };
 
-    // Generate PDF
-    const pdfBuffer = await renderToBuffer(React.createElement(ReceiptPDF, { receipt: pdfData }) as any);
+    // Generate PDF with template support
+    const pdfBuffer = await renderToBuffer(React.createElement(TemplatedReceiptPDF, { receipt: pdfData }) as any);
 
     // Return PDF as response
     return new NextResponse(pdfBuffer as any, {

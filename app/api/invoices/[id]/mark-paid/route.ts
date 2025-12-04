@@ -34,6 +34,7 @@ export async function POST(
       },
       include: {
         customer: true,
+        template: true,
       },
     });
 
@@ -52,11 +53,17 @@ export async function POST(
     const body = await request.json();
     const validatedData = markPaidSchema.parse(body);
 
-    // Generate receipt number
-    const receiptCount = await prisma.receipt.count({
-      where: { tenantId: tenant.id },
+    console.log('Mark paid request:', {
+      invoiceId,
+      paymentMethod: validatedData.paymentMethod,
+      invoiceTemplateId: invoice.templateId,
     });
-    const receiptNumber = `REC-${String(receiptCount + 1).padStart(4, '0')}`;
+
+    // Generate receipt number based on invoice number
+    // Convert invoice number to receipt number (e.g., INV-001 -> REC-001)
+    const receiptNumber = invoice.invoiceNumber.replace(/^INV/, 'REC');
+
+    console.log('Generated receipt number:', receiptNumber, 'from invoice:', invoice.invoiceNumber);
 
     // Update invoice and create receipt in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -74,7 +81,7 @@ export async function POST(
         },
       });
 
-      // Create receipt
+      // Create receipt with same template as invoice
       const receipt = await tx.receipt.create({
         data: {
           tenantId: tenant.id,
@@ -86,9 +93,11 @@ export async function POST(
           reference: validatedData.reference,
           notes: validatedData.notes,
           issueDate: validatedData.paidAt ? new Date(validatedData.paidAt) : new Date(),
+          templateId: invoice.templateId, // Use same template as invoice
         },
         include: {
           customer: true,
+          template: true,
         },
       });
 
