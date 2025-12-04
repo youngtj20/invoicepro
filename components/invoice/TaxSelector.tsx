@@ -8,6 +8,7 @@ interface Tax {
   name: string;
   rate: number;
   isDefault: boolean;
+  description?: string | null;
 }
 
 interface TaxSelectorProps {
