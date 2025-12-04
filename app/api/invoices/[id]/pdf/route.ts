@@ -24,7 +24,7 @@ export async function GET(
     const tenant = await requireTenant();
     const { id: invoiceId } = await params;
 
-    // Fetch invoice with all related data including template
+    // Fetch invoice with all related data including template and taxes
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
@@ -38,6 +38,11 @@ export async function GET(
           },
         },
         template: true,
+        invoiceTaxes: {
+          include: {
+            tax: true,
+          },
+        },
       },
     });
 
@@ -118,6 +123,11 @@ export async function GET(
       subtotal: invoice.subtotal,
       taxAmount: invoice.taxAmount,
       total: invoice.total,
+      taxes: invoice.invoiceTaxes?.map((invoiceTax) => ({
+        name: invoiceTax.tax.name,
+        rate: invoiceTax.tax.rate,
+        amount: invoiceTax.taxAmount,
+      })) || [],
       notes: invoice.notes,
       terms: invoice.terms,
       currency: tenant.currency,

@@ -119,6 +119,7 @@ const invoiceSchema = z.object({
   subtotal: z.number().min(0),
   taxAmount: z.number().min(0),
   total: z.number().min(0),
+  taxIds: z.array(z.string()).optional(), // Multiple tax IDs
 });
 
 // POST /api/invoices - Create new invoice
@@ -143,8 +144,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('=== INVOICE CREATION START ===');
     console.log('Received invoice data:', JSON.stringify(body, null, 2));
+    console.log('taxIds from request:', body.taxIds);
     const validatedData = invoiceSchema.parse(body);
+    console.log('Validated taxIds:', validatedData.taxIds);
 
     // Determine templateId: if not provided, fall back to tenant defaultTemplateId
     let resolvedTemplateId: string | undefined = validatedData.templateId;
@@ -195,49 +199,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create invoice with items in a transaction
-    const invoice = await prisma.$transaction(async (tx) => {
-      const newInvoice = await tx.invoice.create({
-        data: {
-          tenantId: tenant.id,
-          customerId: validatedData.customerId,
-          invoiceNumber: validatedData.invoiceNumber,
-          issueDate: new Date(validatedData.invoiceDate),
-          dueDate: new Date(validatedData.dueDate),
-          status: validatedData.status,
-          templateId: resolvedTemplateId,
-          notes: validatedData.notes,
-          terms: validatedData.terms,
-          subtotal: validatedData.subtotal,
-          taxAmount: validatedData.taxAmount,
-          total: validatedData.total,
-        },
-      });
+    // Create invoice with items
+    const newInvoice = await prisma.invoice.create({
+      data: {
+        tenantId: tenant.id,
+        customerId: validatedData.customerId,
+        invoiceNumber: validatedData.invoiceNumber,
+        issueDate: new Date(validatedData.invoiceDate),
+        dueDate: new Date(validatedData.dueDate),
+        status: validatedData.status,
+        templateId: resolvedTemplateId,
+        notes: validatedData.notes,
+        terms: validatedData.terms,
+        subtotal: validatedData.subtotal,
+        taxAmount: validatedData.taxAmount,
+        total: validatedData.total,
+      },
+    });
 
-      // Create invoice items
-      await tx.invoiceItem.createMany({
-        data: validatedData.items.map((item) => ({
-          invoiceId: newInvoice.id,
-          itemId: item.itemId,
-          description: item.description,
-          quantity: item.quantity,
-          price: item.unitPrice,
-          amount: item.total,
-        })),
-      });
+    // Create invoice items
+    await prisma.invoiceItem.createMany({
+      data: validatedData.items.map((item) => ({
+        invoiceId: newInvoice.id,
+        itemId: item.itemId,
+        description: item.description,
+        quantity: item.quantity,
+        price: item.unitPrice,
+        amount: item.total,
+      })),
+    });
 
-      return tx.invoice.findUnique({
-        where: { id: newInvoice.id },
-        include: {
-          customer: true,
-          items: {
-            include: {
-              item: true,
-            },
+    // Create invoice taxes if provided
+    if (validatedData.taxIds && validatedData.taxIds.length > 0) {
+      try {
+        console.log('Creating invoice taxes for taxIds:', validatedData.taxIds);
+        
+        // Get tax details to calculate individual tax amounts
+        const taxes = await prisma.tax.findMany({
+          where: {
+            id: { in: validatedData.taxIds },
+            tenantId: tenant.id,
           },
-          template: true,
+        });
+
+        console.log('Found taxes:', taxes.length, taxes.map(t => ({ id: t.id, name: t.name, rate: t.rate })));
+
+        // Create invoice taxes
+        if (taxes.length > 0) {
+          const invoiceTaxData = taxes.map((tax) => ({
+            invoiceId: newInvoice.id,
+            taxId: tax.id,
+            taxAmount: (validatedData.subtotal * tax.rate) / 100,
+          }));
+          
+          console.log('Creating invoice tax records:', invoiceTaxData);
+          
+          const createdTaxes = await prisma.invoiceTax.createMany({
+            data: invoiceTaxData,
+          });
+          
+          console.log('Created invoice taxes:', createdTaxes);
+        }
+      } catch (taxError) {
+        console.error('Error creating invoice taxes:', taxError);
+        // Continue without taxes if there's an error - schema might not be migrated yet
+      }
+    } else {
+      console.log('No taxIds provided or empty array');
+    }
+
+    // Fetch complete invoice with all relationships
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: newInvoice.id },
+      include: {
+        customer: true,
+        items: {
+          include: {
+            item: true,
+          },
         },
-      });
+        template: true,
+        invoiceTaxes: {
+          include: {
+            tax: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(invoice, { status: 201 });

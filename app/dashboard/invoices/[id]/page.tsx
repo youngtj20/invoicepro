@@ -48,6 +48,17 @@ interface Customer {
   postalCode: string | null;
 }
 
+interface InvoiceTax {
+  id: string;
+  taxId: string;
+  taxAmount: number;
+  tax: {
+    id: string;
+    name: string;
+    rate: number;
+  };
+}
+
 interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -63,6 +74,7 @@ interface Invoice {
   terms: string | null;
   customer: Customer;
   items: InvoiceItem[];
+  invoiceTaxes?: InvoiceTax[];
   createdAt: string;
 }
 
@@ -480,12 +492,24 @@ export default function InvoiceDetailPage() {
               <span>Subtotal:</span>
               <span className="font-medium">{formatCurrency(invoice.subtotal)}</span>
             </div>
-            {invoice.taxAmount > 0 && (
+            
+            {/* Display individual taxes */}
+            {invoice.invoiceTaxes && invoice.invoiceTaxes.length > 0 ? (
+              <>
+                {invoice.invoiceTaxes.map((invoiceTax) => (
+                  <div key={invoiceTax.id} className="flex justify-between text-gray-700">
+                    <span>{invoiceTax.tax.name} ({invoiceTax.tax.rate}%):</span>
+                    <span className="font-medium">{formatCurrency(invoiceTax.taxAmount)}</span>
+                  </div>
+                ))}
+              </>
+            ) : invoice.taxAmount > 0 ? (
               <div className="flex justify-between text-gray-700">
                 <span>Tax:</span>
                 <span className="font-medium">{formatCurrency(invoice.taxAmount)}</span>
               </div>
-            )}
+            ) : null}
+            
             <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-300">
               <span>Total:</span>
               <span>{formatCurrency(invoice.total)}</span>

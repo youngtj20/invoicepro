@@ -120,6 +120,15 @@ export default function LineItemTable({
     item.name.toLowerCase().includes(itemSearch.toLowerCase())
   );
 
+  const isItemValid = (item: LineItem): boolean => {
+    return (
+      item.description && 
+      item.description.trim() !== '' && 
+      item.quantity > 0 && 
+      item.unitPrice >= 0
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

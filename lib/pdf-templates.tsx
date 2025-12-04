@@ -374,6 +374,11 @@ interface InvoiceData {
   subtotal: number;
   taxAmount: number;
   total: number;
+  taxes?: Array<{
+    name: string;
+    rate: number;
+    amount: number;
+  }>;
   notes?: string | null;
   terms?: string | null;
   currency?: string;
@@ -583,14 +588,28 @@ export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
               {formatCurrency(invoice.subtotal, invoice.currency)}
             </Text>
           </View>
-          {invoice.taxAmount > 0 && (
+          
+          {/* Display individual taxes */}
+          {invoice.taxes && invoice.taxes.length > 0 ? (
+            <>
+              {invoice.taxes.map((tax, index) => (
+                <View key={index} style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>{tax.name} ({tax.rate}%):</Text>
+                  <Text style={styles.totalValue}>
+                    {formatCurrency(tax.amount, invoice.currency)}
+                  </Text>
+                </View>
+              ))}
+            </>
+          ) : invoice.taxAmount > 0 ? (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>VAT:</Text>
+              <Text style={styles.totalLabel}>Tax:</Text>
               <Text style={styles.totalValue}>
                 {formatCurrency(invoice.taxAmount, invoice.currency)}
               </Text>
             </View>
-          )}
+          ) : null}
+          
           <View style={styles.grandTotal}>
             <Text>TOTAL:</Text>
             <Text>{formatCurrency(invoice.total, invoice.currency)}</Text>

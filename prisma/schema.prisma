@@ -280,10 +280,53 @@ model Tax {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Legacy single-tax relationships (for backward compatibility)
   invoices        Invoice[]
   proformaInvoices ProformaInvoice[]
+  
+  // New multiple-tax relationships
+  invoiceTaxes    InvoiceTax[]
+  proformaInvoiceTaxes ProformaInvoiceTax[]
 
   @@index([tenantId])
+}
+
+// Junction table for multiple taxes per invoice
+model InvoiceTax {
+  id              String   @id @default(cuid())
+  invoiceId       String
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  taxId           String
+  tax             Tax      @relation(fields: [taxId], references: [id], onDelete: Cascade)
+
+  taxAmount       Float    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([invoiceId, taxId])
+  @@index([invoiceId])
+  @@index([taxId])
+}
+
+// Junction table for multiple taxes per proforma invoice
+model ProformaInvoiceTax {
+  id              String   @id @default(cuid())
+  proformaId      String
+  proforma        ProformaInvoice @relation(fields: [proformaId], references: [id], onDelete: Cascade)
+
+  taxId           String
+  tax             Tax      @relation(fields: [taxId], references: [id], onDelete: Cascade)
+
+  taxAmount       Float    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([proformaId, taxId])
+  @@index([proformaId])
+  @@index([taxId])
 }
 
 model Invoice {
@@ -331,6 +374,7 @@ model Invoice {
   items           InvoiceItem[]
   payments        Payment[]
   auditLogs       AuditLog[]
+  invoiceTaxes    InvoiceTax[]
 
   @@unique([tenantId, invoiceNumber])
   @@index([tenantId])
@@ -439,6 +483,7 @@ model ProformaInvoice {
   updatedAt       DateTime @updatedAt
 
   items           ProformaInvoiceItem[]
+  proformaInvoiceTaxes ProformaInvoiceTax[]
 
   @@unique([tenantId, proformaNumber])
   @@index([tenantId])

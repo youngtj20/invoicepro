@@ -50,8 +50,12 @@ export default function NewInvoicePage() {
   const [notes, setNotes] = useState('');
   const [terms, setTerms] = useState('');
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
-  const [taxId, setTaxId] = useState<string | null>(null);
-  const [taxRate, setTaxRate] = useState(0);
+  const [taxIds, setTaxIds] = useState<string[]>([]);
+  const [taxRates, setTaxRates] = useState<number[]>([]);
+
+  useEffect(() => {
+    console.log('Tax state updated:', { taxIds, taxRates });
+  }, [taxIds, taxRates]);
 
   useEffect(() => {
     generateInvoiceNumber();
@@ -112,16 +116,19 @@ export default function NewInvoicePage() {
     }
   };
 
-  const handleTaxSelect = (id: string | null, rate: number) => {
-    setTaxId(id);
-    setTaxRate(rate);
+  const handleTaxSelect = (ids: string[], rates: number[]) => {
+    setTaxIds(ids);
+    setTaxRates(rates);
 
-    // Update all line items with new tax rate
+    // Calculate combined tax rate
+    const combinedRate = rates.reduce((sum, rate) => sum + rate, 0);
+
+    // Update all line items with new combined tax rate
     setLineItems((items) =>
       items.map((item) => {
-        const taxAmount = (item.quantity * item.unitPrice * rate) / 100;
+        const taxAmount = (item.quantity * item.unitPrice * combinedRate) / 100;
         const total = item.quantity * item.unitPrice + taxAmount;
-        return { ...item, taxId: id || undefined, taxRate: rate, taxAmount, total };
+        return { ...item, taxRate: combinedRate, taxAmount, total };
       })
     );
   };
@@ -156,8 +163,30 @@ export default function NewInvoicePage() {
     }
   };
 
+  const validateLineItems = (): boolean => {
+    for (const item of lineItems) {
+      if (!item.description || item.description.trim() === '') {
+        setError('All line items must have a description');
+        return false;
+      }
+      if (item.quantity <= 0) {
+        setError('All line items must have a quantity greater than 0');
+        return false;
+      }
+      if (item.unitPrice < 0) {
+        setError('All line items must have a valid unit price');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = () => {
     if (canGoNext() && currentStep < 6) {
+      // Validate line items before moving to next step
+      if (currentStep === 4 && !validateLineItems()) {
+        return;
+      }
       setCurrentStep(currentStep + 1);
       setError('');
     } else if (currentStep === 1 && !customerId) {
@@ -213,7 +242,11 @@ export default function NewInvoicePage() {
         subtotal,
         taxAmount,
         total,
+        taxIds, // Send multiple tax IDs
       };
+
+      console.log('Submitting invoice with taxIds:', taxIds);
+      console.log('Full invoice data:', invoiceData);
 
       const response = await fetch('/api/invoices', {
         method: 'POST',
@@ -222,6 +255,8 @@ export default function NewInvoicePage() {
       });
 
       const result = await response.json();
+
+      console.log('Invoice creation response:', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create invoice');
@@ -381,13 +416,13 @@ export default function NewInvoicePage() {
           <LineItemTable
             items={lineItems}
             onChange={setLineItems}
-            defaultTaxRate={taxRate}
-            defaultTaxId={taxId || undefined}
+            defaultTaxRate={taxRates.reduce((sum, rate) => sum + rate, 0)}
+            defaultTaxId={undefined}
           />
         )}
 
         {currentStep === 5 && (
-          <TaxSelector selectedTaxId={taxId} onSelect={handleTaxSelect} />
+          <TaxSelector selectedTaxIds={taxIds} onSelect={handleTaxSelect} />
         )}
 
         {currentStep === 6 && (

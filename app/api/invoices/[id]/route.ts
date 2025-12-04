@@ -32,6 +32,11 @@ export async function GET(
           },
         },
         template: true,
+        invoiceTaxes: {
+          include: {
+            tax: true,
+          },
+        },
       },
     });
 
