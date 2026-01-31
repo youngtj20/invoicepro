@@ -71,17 +71,66 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
+      console.log('=== JWT Callback Debug ===');
+      console.log('Trigger:', trigger);
+      console.log('User:', user ? { id: user.id, tenantId: user.tenantId } : 'none');
+      console.log('Token before:', { id: token.id, tenantId: token.tenantId });
+
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.tenantId = user.tenantId;
       }
 
-      // Handle session update
-      if (trigger === 'update' && session) {
-        token = { ...token, ...session };
+      // For OAuth providers, fetch user data from database to get tenantId
+      if (account?.provider === 'google' && user) {
+        console.log('OAuth provider detected, fetching from database');
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            tenantId: true,
+          },
+        });
+
+        console.log('OAuth dbUser:', dbUser ? { id: dbUser.id, tenantId: dbUser.tenantId } : 'not found');
+
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.tenantId = dbUser.tenantId;
+        }
       }
+
+      // Handle session update - fetch fresh data from database
+      if (trigger === 'update') {
+        console.log('Session update triggered, fetching from database');
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            tenantId: true,
+          },
+        });
+
+        console.log('Update dbUser:', dbUser ? { id: dbUser.id, tenantId: dbUser.tenantId } : 'not found');
+
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.tenantId = dbUser.tenantId;
+        }
+      }
+
+      console.log('Token after:', { id: token.id, tenantId: token.tenantId });
+      console.log('=== End JWT Callback ===');
 
       return token;
     },

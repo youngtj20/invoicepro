@@ -38,6 +38,16 @@ export default async function DashboardLayout({
 
   const tenant = user.tenant!;
 
+  // Check if tenant account is suspended
+  if (tenant.status === 'SUSPENDED') {
+    redirect('/account-suspended');
+  }
+
+  // Check if tenant account is deleted
+  if (tenant.status === 'DELETED') {
+    redirect('/account-deleted');
+  }
+
   return (
     <DashboardLayoutClient user={user} tenant={tenant}>
       {children}

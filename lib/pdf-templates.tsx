@@ -70,6 +70,42 @@ export const TEMPLATE_COLORS = {
     accent: '#06B6D4',
     background: '#CCFBF1',
   },
+  'gradient-sunset': {
+    primary: '#F97316',
+    secondary: '#EA580C',
+    accent: '#FB923C',
+    background: '#FFEDD5',
+  },
+  'luxury-gold': {
+    primary: '#EAB308',
+    secondary: '#CA8A04',
+    accent: '#FCD34D',
+    background: '#FEF3C7',
+  },
+  'ocean-wave': {
+    primary: '#06B6D4',
+    secondary: '#0891B2',
+    accent: '#22D3EE',
+    background: '#CFFAFE',
+  },
+  'rose-gold': {
+    primary: '#FB7185',
+    secondary: '#F43F5E',
+    accent: '#FDA4AF',
+    background: '#FFE4E6',
+  },
+  'midnight-dark': {
+    primary: '#7C3AED',
+    secondary: '#6D28D9',
+    accent: '#8B5CF6',
+    background: '#EDE9FE',
+  },
+  'pastel-dream': {
+    primary: '#A78BFA',
+    secondary: '#8B5CF6',
+    accent: '#C4B5FD',
+    background: '#F5F3FF',
+  },
   // Fallback colors
   classic: {
     primary: '#2563EB',
@@ -452,6 +488,12 @@ const getTemplateColors = (template?: string) => {
   if (slug.includes('professional')) return TEMPLATE_COLORS['professional-black'];
   if (slug.includes('friendly')) return TEMPLATE_COLORS['friendly-yellow'];
   if (slug.includes('tech')) return TEMPLATE_COLORS['tech-teal'];
+  if (slug.includes('gradient') || slug.includes('sunset')) return TEMPLATE_COLORS['gradient-sunset'];
+  if (slug.includes('luxury') || slug.includes('gold')) return TEMPLATE_COLORS['luxury-gold'];
+  if (slug.includes('ocean') || slug.includes('wave')) return TEMPLATE_COLORS['ocean-wave'];
+  if (slug.includes('rose')) return TEMPLATE_COLORS['rose-gold'];
+  if (slug.includes('midnight') || slug.includes('dark')) return TEMPLATE_COLORS['midnight-dark'];
+  if (slug.includes('pastel') || slug.includes('dream')) return TEMPLATE_COLORS['pastel-dream'];
   
   return TEMPLATE_COLORS.classic;
 };

@@ -9,6 +9,12 @@ export { default as FreshOrange } from './FreshOrange';
 export { default as ProfessionalBlack } from './ProfessionalBlack';
 export { default as FriendlyYellow } from './FriendlyYellow';
 export { default as TechTeal } from './TechTeal';
+export { default as GradientSunset } from './GradientSunset';
+export { default as LuxuryGold } from './LuxuryGold';
+export { default as OceanWave } from './OceanWave';
+export { default as RoseGold } from './RoseGold';
+export { default as MidnightDark } from './MidnightDark';
+export { default as PastelDream } from './PastelDream';
 
 // Export types
 export type { InvoiceData, TemplateProps } from './types';
@@ -24,6 +30,12 @@ import FreshOrange from './FreshOrange';
 import ProfessionalBlack from './ProfessionalBlack';
 import FriendlyYellow from './FriendlyYellow';
 import TechTeal from './TechTeal';
+import GradientSunset from './GradientSunset';
+import LuxuryGold from './LuxuryGold';
+import OceanWave from './OceanWave';
+import RoseGold from './RoseGold';
+import MidnightDark from './MidnightDark';
+import PastelDream from './PastelDream';
 
 export const TEMPLATE_MAP: Record<string, React.ComponentType<any>> = {
   'modern-blue': ModernBlue,
@@ -36,6 +48,12 @@ export const TEMPLATE_MAP: Record<string, React.ComponentType<any>> = {
   'professional-black': ProfessionalBlack,
   'friendly-yellow': FriendlyYellow,
   'tech-teal': TechTeal,
+  'gradient-sunset': GradientSunset,
+  'luxury-gold': LuxuryGold,
+  'ocean-wave': OceanWave,
+  'rose-gold': RoseGold,
+  'midnight-dark': MidnightDark,
+  'pastel-dream': PastelDream,
 };
 
 // Template metadata for gallery display
@@ -108,6 +126,48 @@ export const TEMPLATE_METADATA = [
     name: 'Tech Teal',
     description: 'Modern tech startup vibe with teal',
     color: '#0891B2',
+    isPremium: true,
+  },
+  {
+    id: 'gradient-sunset',
+    name: 'Gradient Sunset',
+    description: 'Beautiful gradient design with warm sunset colors',
+    color: '#F97316',
+    isPremium: true,
+  },
+  {
+    id: 'luxury-gold',
+    name: 'Luxury Gold',
+    description: 'Premium gold and black luxury design',
+    color: '#EAB308',
+    isPremium: true,
+  },
+  {
+    id: 'ocean-wave',
+    name: 'Ocean Wave',
+    description: 'Calming blue-green gradient with wave elements',
+    color: '#06B6D4',
+    isPremium: true,
+  },
+  {
+    id: 'rose-gold',
+    name: 'Rose Gold',
+    description: 'Elegant rose gold and cream design',
+    color: '#FB7185',
+    isPremium: true,
+  },
+  {
+    id: 'midnight-dark',
+    name: 'Midnight Dark',
+    description: 'Modern dark theme with neon accents',
+    color: '#7C3AED',
+    isPremium: true,
+  },
+  {
+    id: 'pastel-dream',
+    name: 'Pastel Dream',
+    description: 'Soft pastel colors for a gentle, dreamy look',
+    color: '#A78BFA',
     isPremium: true,
   },
 ];

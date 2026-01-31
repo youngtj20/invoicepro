@@ -15,6 +15,8 @@ import {
   CreditCard,
   ChevronRight,
   ChevronLeft,
+  BarChart3,
+  Palette,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import LogoutButton from './LogoutButton';
@@ -34,7 +36,9 @@ const navigation = [
   { name: 'Customers', href: '/dashboard/customers', icon: Users },
   { name: 'Items', href: '/dashboard/items', icon: Package },
   { name: 'Taxes', href: '/dashboard/taxes', icon: Percent },
+  { name: 'Templates', href: '/dashboard/templates', icon: Palette },
   { name: 'Receipts', href: '/dashboard/receipts', icon: Receipt },
+  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'Subscription', href: '/dashboard/subscription', icon: CreditCard },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

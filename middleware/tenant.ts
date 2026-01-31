@@ -5,7 +5,22 @@ import prisma from '@/lib/prisma';
 export async function getTenantId(): Promise<string | null> {
   const session = await getServerSession(authOptions);
 
+  console.log('=== getTenantId Debug ===');
+  console.log('Session exists:', !!session);
+  console.log('Session user:', session?.user);
+  console.log('Session user tenantId:', session?.user?.tenantId);
+
   if (!session?.user?.tenantId) {
+    // Try to fetch from database as fallback
+    if (session?.user?.id) {
+      console.log('Fetching tenantId from database for user:', session.user.id);
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { tenantId: true },
+      });
+      console.log('Database user tenantId:', user?.tenantId);
+      return user?.tenantId || null;
+    }
     return null;
   }
 

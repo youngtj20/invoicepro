@@ -14,6 +14,12 @@ import FreshOrange from '@/components/templates/FreshOrange';
 import ProfessionalBlack from '@/components/templates/ProfessionalBlack';
 import FriendlyYellow from '@/components/templates/FriendlyYellow';
 import TechTeal from '@/components/templates/TechTeal';
+import GradientSunset from '@/components/templates/GradientSunset';
+import LuxuryGold from '@/components/templates/LuxuryGold';
+import OceanWave from '@/components/templates/OceanWave';
+import RoseGold from '@/components/templates/RoseGold';
+import MidnightDark from '@/components/templates/MidnightDark';
+import PastelDream from '@/components/templates/PastelDream';
 
 // Sample invoice data for preview
 const sampleInvoice = {
@@ -99,6 +105,12 @@ const templates: Record<string, React.ComponentType<any>> = {
   'professional-black': ProfessionalBlack,
   'friendly-yellow': FriendlyYellow,
   'tech-teal': TechTeal,
+  'gradient-sunset': GradientSunset,
+  'luxury-gold': LuxuryGold,
+  'ocean-wave': OceanWave,
+  'rose-gold': RoseGold,
+  'midnight-dark': MidnightDark,
+  'pastel-dream': PastelDream,
 };
 
 export default function TemplatePreviewPage() {
