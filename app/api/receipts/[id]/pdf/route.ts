@@ -78,6 +78,7 @@ export async function GET(
       companyEmail: tenant.email || undefined,
       companyPhone: tenant.phone || undefined,
       companyAddress: tenant.address || undefined,
+      companyTaxId: tenant.taxId || undefined,
       companyLogo: logoBase64,
       bankName: tenant.bankName || undefined,
       accountNumber: tenant.accountNumber || undefined,

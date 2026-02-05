@@ -386,6 +386,7 @@ interface InvoiceData {
   companyEmail?: string;
   companyPhone?: string;
   companyAddress?: string;
+  companyTaxId?: string | null;
   companyLogo?: string | null;
   logoSize: number; // Logo size in pixels (default: 50)
   bankName?: string | null;
@@ -541,6 +542,7 @@ export const TemplatedInvoicePDF = ({ invoice }: { invoice: InvoiceData }) => {
                 {invoice.companyEmail && <Text>{invoice.companyEmail}</Text>}
                 {invoice.companyPhone && <Text>{invoice.companyPhone}</Text>}
                 {invoice.companyAddress && <Text>{invoice.companyAddress}</Text>}
+                {invoice.companyTaxId && <Text>Tax ID: {invoice.companyTaxId}</Text>}
               </View>
             </View>
             <View>
@@ -707,6 +709,7 @@ interface ReceiptData {
   companyEmail?: string;
   companyPhone?: string;
   companyAddress?: string;
+  companyTaxId?: string | null;
   companyLogo?: string | null;
   bankName?: string | null;
   accountNumber?: string | null;
@@ -757,6 +760,7 @@ export const TemplatedReceiptPDF = ({ receipt }: { receipt: ReceiptData }) => {
                 {receipt.companyEmail && <Text>{receipt.companyEmail}</Text>}
                 {receipt.companyPhone && <Text>{receipt.companyPhone}</Text>}
                 {receipt.companyAddress && <Text>{receipt.companyAddress}</Text>}
+                {receipt.companyTaxId && <Text>Tax ID: {receipt.companyTaxId}</Text>}
               </View>
             </View>
             <View>
