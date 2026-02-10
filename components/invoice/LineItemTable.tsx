@@ -107,13 +107,13 @@ export default function LineItemTable({
   };
 
   const calculateTaxAmount = (item: LineItem): number => {
-    const subtotal = item.quantity * item.unitPrice;
-    return (subtotal * item.taxRate) / 100;
+    // Tax is calculated on subtotal, not per item
+    return 0;
   };
 
   const calculateTotal = (item: LineItem): number => {
-    const subtotal = item.quantity * item.unitPrice;
-    return subtotal + calculateTaxAmount(item);
+    // Total for line item is just quantity * unitPrice (no tax)
+    return item.quantity * item.unitPrice;
   };
 
   const filteredItems = availableItems.filter((item) =>

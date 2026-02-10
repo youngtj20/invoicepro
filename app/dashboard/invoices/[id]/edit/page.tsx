@@ -64,6 +64,7 @@ export default function EditInvoicePage() {
   const [notes, setNotes] = useState('');
   const [terms, setTerms] = useState('');
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
+  const [invoiceTaxRate, setInvoiceTaxRate] = useState(0);
 
   useEffect(() => {
     fetchInvoice();
@@ -86,6 +87,15 @@ export default function EditInvoicePage() {
       setDueDate(data.dueDate ? data.dueDate.split('T')[0] : '');
       setNotes(data.notes || '');
       setTerms(data.terms || '');
+
+      // Calculate and set the VAT rate from the invoice data
+      // VAT = (taxAmount / subtotal) * 100
+      if (data.subtotal > 0 && data.taxAmount > 0) {
+        const calculatedTaxRate = (data.taxAmount / data.subtotal) * 100;
+        setInvoiceTaxRate(calculatedTaxRate);
+      } else {
+        setInvoiceTaxRate(0);
+      }
 
       // Convert invoice items to line items format
       const items: LineItem[] = data.items.map((item: any) => {
@@ -136,10 +146,8 @@ export default function EditInvoicePage() {
         return sum + (item.quantity * item.unitPrice);
       }, 0);
       
-      // Calculate total tax
-      const totalTax = lineItems.reduce((sum, item) => {
-        return sum + (item.taxAmount || 0);
-      }, 0);
+      // Calculate VAT on subtotal (not per item)
+      const totalTax = (subtotal * invoiceTaxRate) / 100;
       
       const total = subtotal + totalTax;
 
@@ -291,6 +299,24 @@ export default function EditInvoicePage() {
           <LineItemTable items={lineItems} onChange={setLineItems} />
         </div>
 
+        {/* Tax Rate */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              VAT Rate (%)
+            </label>
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={invoiceTaxRate}
+              onChange={(e) => setInvoiceTaxRate(parseFloat(e.target.value) || 0)}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
         {/* Notes & Terms */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -323,26 +349,36 @@ export default function EditInvoicePage() {
         {/* Summary */}
         <div className="border-t pt-4">
           <div className="max-w-xs ml-auto space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-medium">
-                NGN {lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            {lineItems.some(item => item.taxAmount > 0) && (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Tax:</span>
-                <span className="font-medium">
-                  NGN {lineItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-            )}
-            <div className="flex justify-between text-lg font-bold border-t pt-2">
-              <span>Total:</span>
-              <span>
-                NGN {(lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) + lineItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
+            {(() => {
+              const subtotal = lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+              const vat = (subtotal * invoiceTaxRate) / 100;
+              const total = subtotal + vat;
+              
+              return (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span className="font-medium">
+                      NGN {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {invoiceTaxRate > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">VAT ({invoiceTaxRate}%):</span>
+                      <span className="font-medium">
+                        NGN {vat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold border-t pt-2">
+                    <span>Total:</span>
+                    <span>
+                      NGN {total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
