@@ -59,7 +59,7 @@ const invoiceItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   quantity: z.number().min(1, 'Quantity must be at least 1'),
   price: z.number().min(0, 'Price must be positive'),
-  amount: z.number().min(0, 'Amount must be positive'),
+  amount: z.coerce.number().min(0, 'Amount must be positive'),
 });
 
 const updateInvoiceSchema = z.object({
@@ -68,12 +68,12 @@ const updateInvoiceSchema = z.object({
   dueDate: z.string().min(1, 'Due date is required').optional(),
   status: z.enum(['DRAFT', 'SENT', 'VIEWED', 'OVERDUE', 'CANCELED']).optional(),
   templateId: z.string().optional(),
-  notes: z.string().optional(),
-  terms: z.string().optional(),
+  notes: z.string().nullable().transform(val => val || '').optional(),
+  terms: z.string().nullable().transform(val => val || '').optional(),
   items: z.array(invoiceItemSchema).optional(),
-  subtotal: z.number().min(0).optional(),
-  taxAmount: z.number().min(0).optional(),
-  total: z.number().min(0).optional(),
+  subtotal: z.coerce.number().min(0, 'Subtotal must be positive').optional(),
+  taxAmount: z.coerce.number().min(0, 'Tax amount must be positive').optional(),
+  total: z.coerce.number().min(0, 'Total must be positive').optional(),
 });
 
 // PATCH /api/invoices/[id] - Update invoice

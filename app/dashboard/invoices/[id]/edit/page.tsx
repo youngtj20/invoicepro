@@ -88,15 +88,24 @@ export default function EditInvoicePage() {
       setTerms(data.terms || '');
 
       // Convert invoice items to line items format
-      const items: LineItem[] = data.items.map((item: any) => ({
-        id: item.id,
-        itemId: item.itemId || null,
-        name: item.item?.name || item.description || 'Item',
-        description: item.item?.description || item.description || '',
-        quantity: item.quantity,
-        unitPrice: item.unitPrice || item.price || 0,
-        total: item.amount,
-      }));
+      const items: LineItem[] = data.items.map((item: any) => {
+        // InvoiceItem has: price (unit price), quantity, amount (line total)
+        const unitPrice = item.price || 0;
+        const quantity = item.quantity || 1;
+        const lineSubtotal = quantity * unitPrice;
+        
+        return {
+          id: item.id,
+          itemId: item.itemId || null,
+          description: item.description || '',
+          quantity: quantity,
+          unitPrice: unitPrice,
+          taxId: item.taxId,
+          taxRate: item.taxRate || 0,
+          taxAmount: item.taxAmount || 0,
+          total: lineSubtotal, // Store just the line subtotal (quantity * price)
+        };
+      });
       setLineItems(items);
     } catch (err: any) {
       setError(err.message);
@@ -122,25 +131,33 @@ export default function EditInvoicePage() {
         throw new Error('Please add at least one line item');
       }
 
-      // Calculate totals
-      const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-      const total = subtotal; // Tax calculation can be added later
+      // Calculate totals - subtotal is sum of (quantity * unitPrice) for each item
+      const subtotal = lineItems.reduce((sum, item) => {
+        return sum + (item.quantity * item.unitPrice);
+      }, 0);
+      
+      // Calculate total tax
+      const totalTax = lineItems.reduce((sum, item) => {
+        return sum + (item.taxAmount || 0);
+      }, 0);
+      
+      const total = subtotal + totalTax;
 
       const payload = {
         invoiceNumber,
         issueDate: new Date(invoiceDate).toISOString(),
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-        notes: notes || null,
-        terms: terms || null,
-        subtotal,
-        taxAmount: 0,
-        total,
+        notes: notes || '',
+        terms: terms || '',
+        subtotal: subtotal || 0,
+        taxAmount: totalTax || 0,
+        total: total || 0,
         items: lineItems.map((item) => ({
           itemId: item.itemId || undefined,
           description: item.description,
           quantity: item.quantity,
           price: item.unitPrice,
-          amount: item.total,
+          amount: (item.quantity * item.unitPrice) || 0,
         })),
       };
 
@@ -309,13 +326,21 @@ export default function EditInvoicePage() {
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal:</span>
               <span className="font-medium">
-                NGN {lineItems.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                NGN {lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
+            {lineItems.some(item => item.taxAmount > 0) && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Tax:</span>
+                <span className="font-medium">
+                  NGN {lineItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-lg font-bold border-t pt-2">
               <span>Total:</span>
               <span>
-                NGN {lineItems.reduce((sum, item) => sum + item.total, 0).toLocaleString()}
+                NGN {(lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) + lineItems.reduce((sum, item) => sum + (item.taxAmount || 0), 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
